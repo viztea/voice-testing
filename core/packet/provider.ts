@@ -30,7 +30,6 @@ export function createPacketProvider(
 
             /* encrypt the packet. */
             await encryptionStrategy.encrypt(cursor, header, frame)
-
             return cursor.slice();
         },
     };

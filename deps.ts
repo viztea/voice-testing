@@ -1,6 +1,6 @@
 export * from "https://deno.land/x/pogsocket@1.0.0/mod.ts";
 
-export * from "https://deno.land/std@0.147.0/async/deferred.ts";
+export * from "https://deno.land/std@0.147.0/async/mod.ts";
 export * from "https://deno.land/std@0.147.0/fmt/colors.ts";
 export * from "https://deno.land/std@0.147.0/streams/conversion.ts";
 export * from "https://deno.land/x/ytdl_core@v0.1.0/mod.ts";

@@ -2,7 +2,7 @@
 
 Discord & Revolt voice in the Deno runtime.
 
-- Uses WebCrypto APIs (except for AES-ECB required by)
+- Uses WebCrypto APIs (except for AES-ECB required by key deriviation)
 - Uses Deno Streams API.
 
 ## Acknowledgements

@@ -1,7 +1,6 @@
 import "../logging.ts";
 import { createGateway, createVoiceGateway, VoiceGatewayInfo, holepunch, xsalsa20_poly1305, env } from "../core/mod.ts";
-import { GatewayOpcodes } from "https://deno.land/x/discord_api_types@0.36.1/gateway/v10.ts";
-import { logger } from "../deps.ts";
+import { discord, logger } from "../deps.ts";
 import { startFfmpegTest } from "./common.ts";
 
 const log = logger.getLogger("discord");
@@ -37,7 +36,7 @@ gateway.state.events.on("dispatch", payload => {
 
 /* send voice state update. */
 await gateway.send({
-    op: GatewayOpcodes.VoiceStateUpdate,
+    op: discord.GatewayOpcodes.VoiceStateUpdate,
     d: {
         guild_id: GUILD_ID,
         channel_id: CHANNEL_ID,
