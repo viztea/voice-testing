@@ -1,0 +1,10 @@
+# idea
+.idea/*
+!.idea/deno.xml
+
+# testing assets
+assets/*
+
+# dev scripts
+run_discord.sh
+run_revolt.sh
