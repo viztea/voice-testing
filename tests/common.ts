@@ -1,5 +1,5 @@
-import { createWritableVoiceStream, PCMStream } from "../core/mod.ts";
-import { VoiceConnection } from "../core/services/mod.ts";
+import { createOpusTransform, createRtpTransform, PCMStream } from "../core/mod.ts";
+import { createWritableRtpStream, VoiceConnection } from "../core/services/mod.ts";
 import { ytdl } from "../deps.ts";
 
 export async function startFfmpegTest(connection: VoiceConnection) {
@@ -16,5 +16,8 @@ export async function startFfmpegTest(connection: VoiceConnection) {
         parentStream = new PCMStream(input);
     }
 
-    return parentStream.pipeTo(createWritableVoiceStream(connection).writable)
+    return parentStream
+        .pipeThrough(createOpusTransform())
+        .pipeThrough(createRtpTransform(connection))
+        .pipeTo(createWritableRtpStream(connection));
 }

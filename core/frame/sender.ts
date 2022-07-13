@@ -1,112 +1,67 @@
-import { logger } from "../../deps.ts";
+import { delay, logger, toTransformStream, } from "../../deps.ts";
 import { VoiceConnection, createFunctionalInterval, createPacketProvider, formatMilliseconds } from "../mod.ts";
-import { getOpusReader } from "./opus.ts";
 
 const silentFrame = new Uint8Array([ 0xFC, 0xFF, 0xFE ]);
 
-export function createWritableVoiceStream(
-    connection: VoiceConnection,
-): VoiceStream {
+export function createRtpTransform(connection: VoiceConnection): TransformStream<Uint8Array, Uint8Array> {
     const log = logger.getLogger("frame/sender");
+    
+    return toTransformStream(async function* transform(src) {    
+        let next = performance.now(), speaking = false, silence = 5, position = 0;
+        function setSpeaking(state: boolean) {
+            log.info(`setting speaking state: ${state}`);
+            if (state) {
+                silence = 5;
+            }
 
-    let running = false, position = 0, readableCtx: ReadableStreamDefaultController<Uint8Array>;
-
-    /* create stream used for queueing pcm audio. */
-    const pcmStream = new ReadableStream({
-        start: ctx => {
-            readableCtx = ctx
+            speaking = state;
+            return connection.updateSpeaking(state);
         }
-    });
 
-    return {
-        writable: new WritableStream({
-            start: () => {
-                running = true;
-    
-                /* get opus reader */
-                const opus = getOpusReader(pcmStream);
-    
-                /* xd */
-                let next = performance.now(), speaking = false, silence = 5;
-                async function setSpeaking(state: boolean) {
-                    log.info(`setting speaking state: ${state}`);
-                    if (state) {
-                        silence = 5;
-                    }
-    
-                    speaking = state;
-                    await connection.updateSpeaking(state);
-                }
-    
-                const provider = createPacketProvider(connection.ssrc, connection.encryptionStrategy)
-                    , xd = performance.now()
-                    , checkup = createFunctionalInterval();
-    
-                let frame_times: number[] = [];
-                checkup.start(1000, () => {
-                    const avg_frame_time = frame_times.reduce((a, c) => a + c, 0) / frame_times.length;
-                    log.info("checkup, avg frame time:", (avg_frame_time).toFixed(2), "ms", "progress:", formatMilliseconds(position));
-                    frame_times = [];
-                });
+        const provider = createPacketProvider(connection.ssrc, connection.encryptionStrategy)
+            , xd = performance.now()
+            , checkup = createFunctionalInterval();
 
-                async function stop() {
-                    await setSpeaking(false);
-                    checkup.stop();
-                    log.info("stopping...");
-                }
-    
-                const run = async () => {
-                    if (!running) {
-                        return stop();
-                    }
+        let frame_times: number[] = [];
+        checkup.start(1000, () => {
+            const avg_frame_time = frame_times.reduce((a, c) => a + c, 0) / frame_times.length;
+            log.info("checkup, avg frame time:", (avg_frame_time).toFixed(2), "ms", "progress:", formatMilliseconds(position));
+            frame_times = [];
+        });
 
-                    const start = performance.now();
-    
-                    /* poll a frame and handle speaking state. */
-                    let { done, value: frame } = await opus.read();
-                    if (done) {
-                        running = false;
-                        return stop();
-                    }
+        for await (let frame of src) {
+            const start = performance.now();
 
-                    if (frame != null && !speaking) {
-                        await setSpeaking(true);
-                    } else if ((frame == null) && speaking && silence == 0) {
-                        await setSpeaking(false);
-                    }
+            /* handle speaking state. */
+            if (frame != null && !speaking) {
+                await setSpeaking(true);
+            } else if ((frame == null) && speaking && silence == 0) {
+                await setSpeaking(false);
+            }
 
-                    /* if there are more silent frames to be sent make sure the frame is not null. */
-                    if (frame == null && silence > 0) {
-                        frame = silentFrame;
-                        silence--
-                    }
-    
-                    if (frame != null) {
-                        position += 20;
-    
-                        /* create and encrypt an rtp packet with the polled frame. */
-                        const rtp = await provider.provide(frame);
-                        frame_times.push(performance.now() - start);
-                        await connection.transport.send(rtp);
-                    }
-    
-                    /* queue the next frame timestamp. */
-                    next += 20;
-                    setTimeout(run, Math.max(0, next - (performance.now() - xd)))
-                }
-    
-                run().catch(() => running = false);
-            },
-            write: chunk => void readableCtx.enqueue(chunk),
-            close: () => void readableCtx.close()
-        }),
-        position,
-        running
-    }
-}
+            /* if there are more silent frames to be sent make sure the frame is not null. */
+            if (frame == null && silence > 0) {
+                frame = silentFrame;
+                silence--
+            }
 
-export interface VoiceStream {
-    writable: WritableStream<Uint8Array>;
-    position: number;
-    running: boolean;
+            if (frame != null) {
+                position += 20;
+
+                /* create and encrypt an rtp packet with the polled frame. */
+
+                const rtp = await provider.provide(frame);
+                frame_times.push(performance.now() - start);
+                yield rtp;
+            }
+
+            /* queue the next frame timestamp. */
+            next += 20;
+            await delay(Math.max(0, next - (performance.now() - xd)))
+        }
+
+        await setSpeaking(false);
+        checkup.stop();
+        log.info("stopping...");
+    })
 }
