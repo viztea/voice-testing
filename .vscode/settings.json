@@ -1,4 +1,7 @@
 {
     "deno.enable": true,
-    "deno.unstable": true
+    "deno.unstable": true,
+    "deno.lint": true,
+    "deno.path": "/home/gino/.local/share/rtx/installs/deno/1.36.3/bin/deno",
+    "deno.maxTsServerMemory": 12000
 }

@@ -6,7 +6,7 @@ export interface ICryptoStrategy {
 }
 
 export interface EncryptionStrategy extends ICryptoStrategy {
-    encrypt(cursor: ByteWriter, header: RtpHeader, payload: Uint8Array): void;
+    encrypt(cursor: ByteWriter, header: RtpHeader, payload: Uint8Array): Promise<void>;
 
     nextSequence(previous: number): number;
 }
@@ -16,5 +16,3 @@ export interface DecryptionStrategy extends ICryptoStrategy {
 }
 
 export type CryptoSuite = EncryptionStrategy & DecryptionStrategy;
-
-

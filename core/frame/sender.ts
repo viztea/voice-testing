@@ -19,13 +19,13 @@ export function createRtpTransform(connection: VoiceConnection): TransformStream
         }
 
         const provider = createPacketProvider(connection.ssrc, connection.encryptionStrategy)
-            , xd = performance.now()
+            , epoch = performance.now()
             , checkup = createFunctionalInterval();
 
         let frame_times: number[] = [];
         checkup.start(1000, () => {
             const avg_frame_time = frame_times.reduce((a, c) => a + c, 0) / frame_times.length;
-            log.info("checkup, avg frame time:", (avg_frame_time).toFixed(2), "ms", "progress:", formatMilliseconds(position));
+            log.info("checkup, avg frame time:", (avg_frame_time).toFixed(2), "ms", `(${frame_times.length})`, "progress:", formatMilliseconds(position));
             frame_times = [];
         });
 
@@ -34,9 +34,9 @@ export function createRtpTransform(connection: VoiceConnection): TransformStream
 
             /* handle speaking state. */
             if (frame != null && !speaking) {
-                await setSpeaking(true);
-            } else if ((frame == null) && speaking && silence == 0) {
-                await setSpeaking(false);
+                setSpeaking(true);
+            } else if (frame == null && speaking && silence == 0) {
+                setSpeaking(false);
             }
 
             /* if there are more silent frames to be sent make sure the frame is not null. */
@@ -49,15 +49,15 @@ export function createRtpTransform(connection: VoiceConnection): TransformStream
                 position += 20;
 
                 /* create and encrypt an rtp packet with the polled frame. */
-
                 const rtp = await provider.provide(frame);
                 frame_times.push(performance.now() - start);
+
                 yield rtp;
             }
 
             /* queue the next frame timestamp. */
             next += 20;
-            await delay(Math.max(0, next - (performance.now() - xd)))
+            await delay(Math.max(0, next - (performance.now() - epoch)))
         }
 
         await setSpeaking(false);

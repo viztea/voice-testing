@@ -27,6 +27,7 @@ export async function create(secretKey: Uint8Array, nonceStrategy: NonceStrategy
 
             /* append the nonce to the cursor */
             nonceStrategy.append(cursor, nonceCursor.data);
+            return Promise.resolve()
         },
         decrypt: () => {
             throw new Error("Not Implemented Yet");

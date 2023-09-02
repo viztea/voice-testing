@@ -17,7 +17,7 @@ await logger.setup({
 
                 const loggerName = rec.loggerName === "default"
                     ? "" 
-                    : `${green(rec.loggerName)}: `
+                    : `${green(rec.loggerName)}${reset(":")} `
 
                 return `» ${levelColor(rec.levelName.padEnd(LOG_LEVEL_NAME_PADDING))}${reset("")} — ${loggerName}${reset("")}${rec.msg} ${rec.args.join(" ")}`
             }

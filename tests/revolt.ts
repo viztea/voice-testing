@@ -1,13 +1,13 @@
 import "../logging.ts";
 import {
     aes_cm_hmac_sha1_80,
-    randomNumber,
-    createDelta,
-    createVortex,
-    createVoiceTransport,
     AuthenticateReply,
+    createDelta,
+    createVoiceTransport,
+    createVortex,
+    env,
     InitializeTransportsReply,
-env,
+    randomNumber,
 } from "../core/mod.ts";
 import { startFfmpegTest } from "./common.ts";
 
@@ -39,7 +39,9 @@ const { data: authenticated } = await vortex.send<AuthenticateReply>({
 });
 
 /* find the opus codec */
-const opusCodec = authenticated.rtpCapabilities.codecs.find(c => c.mimeType === "audio/opus" && c.clockRate === 48000);
+const opusCodec = authenticated.rtpCapabilities.codecs.find((c) =>
+    c.mimeType === "audio/opus" && c.clockRate === 48000
+);
 if (!opusCodec) {
     throw new Error("Could not find compatible opus codec in rtpCapabilities.");
 }
@@ -76,8 +78,8 @@ await vortex.send({
 /* start producer */
 
 // get next mid and random ssrc
-const mid = state.mid++
-    , ssrc = randomNumber(1000, 10000);
+const mid = state.mid++,
+    ssrc = randomNumber(1000, 10000);
 
 // send StartProduce
 await vortex.send({
@@ -111,5 +113,5 @@ await startFfmpegTest({
     encryptionStrategy: aes_cm_hmac_sha1_80.create({
         session: await aes_cm_hmac_sha1_80.generateSessionContext(masterKey),
     }),
-    updateSpeaking: _ => Promise.resolve(),
+    updateSpeaking: (_) => void _,
 });
