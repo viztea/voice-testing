@@ -1,5 +1,5 @@
-export type MediaKind             = "audio" | "video";
-export type RtpExtensionDirection = `${"send" | "recv"}only` | "sendonly"
+export type MediaKind = "audio" | "video";
+export type RtpExtensionDirection = `${"send" | "recv"}only` | "sendonly";
 
 export interface RtpCapabilities {
     codecs: RtpCodecCapability[];
@@ -24,7 +24,7 @@ export interface RtpEncodingParameters {
     dtx?: boolean;
     rid?: string;
     codecPayloadType?: number;
-    rtx?: { ssrc?: number },
+    rtx?: { ssrc?: number };
     scaleDownResolutionBy?: number;
     maxBitrate?: number;
 }
@@ -50,9 +50,9 @@ export interface RtpCodecParameters {
 export interface RtpHeaderExtension {
     kind: MediaKind;
     uri: string;
-    preferredId: string;   
-    preferredEncrypt: boolean | null;   
-    direction: RtpExtensionDirection; 
+    preferredId: string;
+    preferredEncrypt: boolean | null;
+    direction: RtpExtensionDirection;
 }
 
 export interface RtcpFeedback {

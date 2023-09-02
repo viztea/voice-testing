@@ -27,9 +27,11 @@ export async function create(secretKey: Uint8Array): Promise<CryptoSuite> {
                 iv: nonceCursor.data,
                 additionalData: cursor.slice(),
                 tagLength: 16 * 8,
-            }
+            };
 
-            cursor.writeBytes(await crypto.subtle.encrypt(params, key, payload));
+            cursor.writeBytes(
+                await crypto.subtle.encrypt(params, key, payload),
+            );
 
             /* append & increment nonce. */
             cursor.writeUInt32(nonce, "little");

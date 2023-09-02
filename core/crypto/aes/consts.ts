@@ -16,29 +16,29 @@ const t = new Uint8Array(256);
 let x2, x4, x8, s, tEnc, tDec, x = 0, xInv = 0;
 
 for (let i = 0; i < 256; i++) {
-  d[i] = i << 1 ^ (i >> 7) * 283;
-  t[d[i] ^ i] = i;
+    d[i] = i << 1 ^ (i >> 7) * 283;
+    t[d[i] ^ i] = i;
 }
 
 for (; !S[x]; x ^= x2 || 1) {
-  s = xInv ^ xInv << 1 ^ xInv << 2 ^ xInv << 3 ^ xInv << 4;
-  s = s >> 8 ^ s & 255 ^ 99;
+    s = xInv ^ xInv << 1 ^ xInv << 2 ^ xInv << 3 ^ xInv << 4;
+    s = s >> 8 ^ s & 255 ^ 99;
 
-  S[x] = s;
+    S[x] = s;
 
-  x8 = d[x4 = d[x2 = d[x]]];
-  tDec = x8 * 0x1010101 ^ x4 * 0x10001 ^ x2 * 0x101 ^ x * 0x1010100;
-  tEnc = d[s] * 0x101 ^ s * 0x1010100;
+    x8 = d[x4 = d[x2 = d[x]]];
+    tDec = x8 * 0x1010101 ^ x4 * 0x10001 ^ x2 * 0x101 ^ x * 0x1010100;
+    tEnc = d[s] * 0x101 ^ s * 0x1010100;
 
-  T1[x] = tEnc = tEnc << 24 ^ tEnc >>> 8;
-  T2[x] = tEnc = tEnc << 24 ^ tEnc >>> 8;
-  T3[x] = tEnc = tEnc << 24 ^ tEnc >>> 8;
-  T4[x] = tEnc = tEnc << 24 ^ tEnc >>> 8;
+    T1[x] = tEnc = tEnc << 24 ^ tEnc >>> 8;
+    T2[x] = tEnc = tEnc << 24 ^ tEnc >>> 8;
+    T3[x] = tEnc = tEnc << 24 ^ tEnc >>> 8;
+    T4[x] = tEnc = tEnc << 24 ^ tEnc >>> 8;
 
-  T5[s] = tDec = tDec << 24 ^ tDec >>> 8;
-  T6[s] = tDec = tDec << 24 ^ tDec >>> 8;
-  T7[s] = tDec = tDec << 24 ^ tDec >>> 8;
-  T8[s] = tDec = tDec << 24 ^ tDec >>> 8;
+    T5[s] = tDec = tDec << 24 ^ tDec >>> 8;
+    T6[s] = tDec = tDec << 24 ^ tDec >>> 8;
+    T7[s] = tDec = tDec << 24 ^ tDec >>> 8;
+    T8[s] = tDec = tDec << 24 ^ tDec >>> 8;
 
-  xInv = t[xInv] || 1;
+    xInv = t[xInv] || 1;
 }

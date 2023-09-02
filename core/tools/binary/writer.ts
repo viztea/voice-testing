@@ -33,8 +33,7 @@ export class ByteWriter {
         this.position = value;
     }
 
-    /**
-     */
+    /** */
     slice(start = 0, end = this.position): Uint8Array {
         return this.data.subarray(start, end);
     }
@@ -100,7 +99,11 @@ export class ByteWriter {
                 this.write(byte);
             }
         } else if (bytes instanceof Uint8Array) {
-            const source = new Uint8Array(bytes, bytes.byteOffset, bytes.length);
+            const source = new Uint8Array(
+                bytes,
+                bytes.byteOffset,
+                bytes.length,
+            );
             this.data.set(source, this.position);
             this.forward(source.length);
         } else {
@@ -117,7 +120,7 @@ export class ByteWriter {
      * @returns {this} this cursor, useful for chaining.
      */
     writeUInt16(value: number, endianess: Endianess = this.endianess): this {
-        const bytes = [ value & 0xff, value >> 8 ];
+        const bytes = [value & 0xff, value >> 8];
         this.writeBytes(endianess === "big" ? bytes.reverse() : bytes);
 
         return this;
@@ -130,7 +133,12 @@ export class ByteWriter {
      * @returns {this} this cursor, useful for chaining.
      */
     writeUInt32(value: number, endianess: Endianess = this.endianess): this {
-        const bytes = [ value & 0xff, (value >> 8) & 0xff, (value >> 16) & 0xff, value >> 24 ];
+        const bytes = [
+            value & 0xff,
+            (value >> 8) & 0xff,
+            (value >> 16) & 0xff,
+            value >> 24,
+        ];
         this.writeBytes(endianess === "big" ? bytes.reverse() : bytes);
 
         return this;

@@ -1,12 +1,16 @@
 import { DELTA_URL } from "./constants.ts";
-import { DeltaFeatures, RESTGetDeltaResponse, RESTPostJoinCallResponse } from "./types/delta.ts";
+import {
+    DeltaFeatures,
+    RESTGetDeltaResponse,
+    RESTPostJoinCallResponse,
+} from "./types/delta.ts";
 
 export async function createDelta(
     auth: DeltaAuth,
     url: string = DELTA_URL,
 ): Promise<Delta> {
     const response: RESTGetDeltaResponse = await fetch(url)
-        .then(r => r.json());
+        .then((r) => r.json());
 
     function make(endpoint: string, init: RequestInit = {}): Promise<Response> {
         return fetch(url + endpoint, {
@@ -16,17 +20,19 @@ export async function createDelta(
                 "Accept": "application/json",
                 ...(init.headers ?? {}),
                 [auth.header]: auth.token,
-            }
-        })
+            },
+        });
     }
 
     return {
         features: response.features,
         async joinCall(roomId: string): Promise<RESTPostJoinCallResponse> {
-            const r = await make(`/channels/${roomId}/join_call`, { method: "POST" });
+            const r = await make(`/channels/${roomId}/join_call`, {
+                method: "POST",
+            });
             return r.json();
-        }
-    }
+        },
+    };
 }
 
 export interface Delta {

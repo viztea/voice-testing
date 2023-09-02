@@ -1,5 +1,12 @@
-import { createOpusTransform, createRtpTransform, PCMStream } from "../core/mod.ts";
-import { createWritableRtpStream, VoiceConnection } from "../core/services/mod.ts";
+import {
+    createOpusTransform,
+    createRtpTransform,
+    PCMStream,
+} from "../core/mod.ts";
+import {
+    createWritableRtpStream,
+    VoiceConnection,
+} from "../core/services/mod.ts";
 import { ytdl } from "../deps.ts";
 
 export async function startFfmpegTest(connection: VoiceConnection) {
@@ -10,7 +17,10 @@ export async function startFfmpegTest(connection: VoiceConnection) {
 
     let parentStream: ReadableStream<Uint8Array>;
     if (input.includes("youtube.com")) {
-        const stream = await ytdl(input, { filter: "audioonly", quality: "highestaudio" });
+        const stream = await ytdl(input, {
+            filter: "audioonly",
+            quality: "highestaudio",
+        });
         parentStream = stream.pipeThrough(new PCMStream("-"));
     } else {
         parentStream = new PCMStream(input);

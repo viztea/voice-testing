@@ -6,7 +6,11 @@ export interface ICryptoStrategy {
 }
 
 export interface EncryptionStrategy extends ICryptoStrategy {
-    encrypt(cursor: ByteWriter, header: RtpHeader, payload: Uint8Array): Promise<void>;
+    encrypt(
+        cursor: ByteWriter,
+        header: RtpHeader,
+        payload: Uint8Array,
+    ): Promise<void>;
 
     nextSequence(previous: number): number;
 }

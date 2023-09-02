@@ -39,7 +39,7 @@ export class ByteReader {
     readUInt16BE(): number {
         this.requireBytes(2);
 
-        const value = readUInt16BE(this.data, this.position)
+        const value = readUInt16BE(this.data, this.position);
         this.position += 2;
 
         return value;
@@ -53,7 +53,7 @@ export class ByteReader {
     readUInt32BE(): number {
         this.requireBytes(4);
 
-        const value = readUInt32BE(this.data, this.position)
+        const value = readUInt32BE(this.data, this.position);
         this.position += 4;
 
         return value;

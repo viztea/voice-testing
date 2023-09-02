@@ -3,7 +3,7 @@ import { createRtpHeader, RtpHeader, writeRtpHeader } from "./rtp.ts";
 
 export function createPacketProvider(
     ssrc: number,
-    encryptionStrategy: EncryptionStrategy
+    encryptionStrategy: EncryptionStrategy,
 ): PacketProvider {
     const cursor = ByteWriter.withSize(2048);
 
@@ -11,7 +11,7 @@ export function createPacketProvider(
     function getRtpHeader(): RtpHeader {
         const ts = timestamp;
         timestamp += 960;
-        
+
         return createRtpHeader(
             sequence = encryptionStrategy.nextSequence(sequence),
             ts,
@@ -20,16 +20,16 @@ export function createPacketProvider(
     }
 
     return {
-        provide: async frame => {
+        provide: async (frame) => {
             cursor.reset();
-            cursor.data.fill(0)
+            cursor.data.fill(0);
 
             /* write the rtp header to the byte cursor */
             const header = getRtpHeader();
             writeRtpHeader(cursor, header);
 
             /* encrypt the packet. */
-            await encryptionStrategy.encrypt(cursor, header, frame)
+            await encryptionStrategy.encrypt(cursor, header, frame);
             return cursor.slice();
         },
     };

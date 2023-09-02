@@ -1,11 +1,11 @@
 import "../logging.ts";
 import {
+    aead_aes256_gcm,
     createGateway,
     createVoiceGateway,
-    VoiceGatewayInfo,
-    holepunch,
     env,
-    aead_aes256_gcm,
+    holepunch,
+    VoiceGatewayInfo,
 } from "../core/mod.ts";
 import { discord, logger } from "../deps.ts";
 import { startFfmpegTest } from "./common.ts";
@@ -58,7 +58,7 @@ async function runVoice(voice: VoiceGatewayInfo) {
     gateway.state.events.on("ready", async () => {
         const { ip, port } = await holepunch(
             gateway.state.ssrc!,
-            gateway.state.transport!
+            gateway.state.transport!,
         );
 
         /* select protocol */

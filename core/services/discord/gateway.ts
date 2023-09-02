@@ -1,17 +1,34 @@
-import { EventEmitter, connectPogSocket, discord, decoder, gray, logger, magenta, PogSocket, readSocket, sendMessage, yellow } from "../../../deps.ts";
-import { createFunctionalInterval, FunctionalInterval } from "../../tools/mod.ts";
+import {
+    connectPogSocket,
+    decoder,
+    discord,
+    EventEmitter,
+    gray,
+    logger,
+    magenta,
+    PogSocket,
+    readSocket,
+    sendMessage,
+    yellow,
+} from "../../../deps.ts";
+import {
+    createFunctionalInterval,
+    FunctionalInterval,
+} from "../../tools/mod.ts";
 
 const decode = decoder();
 
 export async function createGateway(token: string): Promise<Gateway> {
     const state: GatewayState = {
-        socket: await connectPogSocket("wss://gateway.discord.gg/?v=10&encoding=json"),
+        socket: await connectPogSocket(
+            "wss://gateway.discord.gg/?v=10&encoding=json",
+        ),
         events: new EventEmitter<GatewayEvents>(),
         sequence: -1,
         sessionId: null,
         log: logger.getLogger("discord/gateway"),
-        heartbeat: createFunctionalInterval()
-    }
+        heartbeat: createFunctionalInterval(),
+    };
 
     readGateway(state);
 
@@ -20,19 +37,20 @@ export async function createGateway(token: string): Promise<Gateway> {
         op: discord.GatewayOpcodes.Identify,
         d: {
             token,
-            intents: discord.GatewayIntentBits.Guilds | discord.GatewayIntentBits.GuildVoiceStates,
+            intents: discord.GatewayIntentBits.Guilds |
+                discord.GatewayIntentBits.GuildVoiceStates,
             properties: {
                 browser: "Mixtape",
                 device: "Mixtape",
-                os: "Mixtape"
-            }
-        }
+                os: "Mixtape",
+            },
+        },
     });
 
     return {
         state,
-        send: payload => send(state, payload)
-    }
+        send: (payload) => send(state, payload),
+    };
 }
 
 async function readGateway(state: GatewayState) {
@@ -57,7 +75,10 @@ async function readGateway(state: GatewayState) {
     }
 }
 
-function handleGatewayPayload(state: GatewayState, payload: discord.GatewayReceivePayload) {
+function handleGatewayPayload(
+    state: GatewayState,
+    payload: discord.GatewayReceivePayload,
+) {
     switch (payload.op) {
         case discord.GatewayOpcodes.Dispatch:
             /* received dispatch event. */
@@ -77,7 +98,10 @@ function handleGatewayPayload(state: GatewayState, payload: discord.GatewayRecei
             state.log.info("our last heartbeat was acknowledged");
             break;
         case discord.GatewayOpcodes.Hello:
-            state.heartbeat.start(payload.d.heartbeat_interval, () => heartbeat(state));
+            state.heartbeat.start(
+                payload.d.heartbeat_interval,
+                () => heartbeat(state),
+            );
             break;
     }
 }
@@ -114,4 +138,4 @@ export interface GatewayState {
 
 export type GatewayEvents = {
     dispatch: [payload: discord.GatewayDispatchPayload];
-}
+};

@@ -1,6 +1,9 @@
 // Thanks harmony devs <3 https://github.com/harmonyland/harmony_voice/blob/main/src/ffmpeg.ts
 
-import { readableStreamFromReader, writableStreamFromWriter } from "../../deps.ts";
+import {
+    readableStreamFromReader,
+    writableStreamFromWriter,
+} from "../../deps.ts";
 
 export interface FFmpegStreamOptions {
     path?: string;
@@ -25,7 +28,7 @@ export class FFmpegStream extends ReadableStream<Uint8Array> {
     get proc() {
         if (!this.#proc) {
             this.#proc = Deno.run({
-                cmd: [(this.options.path || "ffmpeg"), ...this.options.args],
+                cmd: [this.options.path || "ffmpeg", ...this.options.args],
                 cwd: Deno.cwd(),
                 stdout: "piped",
                 stderr: this.options.stderr ? "piped" : "null",
@@ -34,9 +37,10 @@ export class FFmpegStream extends ReadableStream<Uint8Array> {
         }
 
         if (this.#proc.stderr) {
-            this.#stderr = readableStreamFromReader(this.#proc.stderr).pipeThrough(
-                new TextDecoderStream(),
-            );
+            this.#stderr = readableStreamFromReader(this.#proc.stderr)
+                .pipeThrough(
+                    new TextDecoderStream(),
+                );
         }
         this.#stdin = writableStreamFromWriter(this.#proc.stdin!);
         return this.#proc;
@@ -45,9 +49,10 @@ export class FFmpegStream extends ReadableStream<Uint8Array> {
     get stderr() {
         if (!this.#stderr) {
             if (this.proc.stderr) {
-                this.#stderr = readableStreamFromReader(this.proc.stderr).pipeThrough(
-                    new TextDecoderStream(),
-                );
+                this.#stderr = readableStreamFromReader(this.proc.stderr)
+                    .pipeThrough(
+                        new TextDecoderStream(),
+                    );
             }
         }
 
