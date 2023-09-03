@@ -1,19 +1,13 @@
 // Thanks harmony devs <3 https://github.com/harmonyland/harmony_voice/blob/main/src/ffmpeg.ts
 
-import {
-    readableStreamFromReader,
-    writableStreamFromWriter,
-} from "../../deps.ts";
-
 export interface FFmpegStreamOptions {
     path?: string;
     args: string[];
-    chunkSize?: number;
     stderr?: boolean;
 }
 
 export class FFmpegStream extends ReadableStream<Uint8Array> {
-    #proc?: Deno.Process;
+    #proc?: Deno.ChildProcess;
     #stderr?: ReadableStream<string>;
     #stdin?: WritableStream<Uint8Array>;
 
@@ -27,32 +21,38 @@ export class FFmpegStream extends ReadableStream<Uint8Array> {
 
     get proc() {
         if (!this.#proc) {
-            this.#proc = Deno.run({
-                cmd: [this.options.path || "ffmpeg", ...this.options.args],
+            // this.#proc = Deno.run({
+            //     cmd: [this.options.path || "ffmpeg", ...this.options.args],
+            //     cwd: Deno.cwd(),
+            //     stdout: "piped",
+            //     stderr: this.options.stderr ? "piped" : "null",
+            //     stdin: "piped",
+            // });
+
+            const command = new Deno.Command(this.options.path ?? "ffmpeg", {
+                args: this.options.args,
                 cwd: Deno.cwd(),
                 stdout: "piped",
                 stderr: this.options.stderr ? "piped" : "null",
                 stdin: "piped",
             });
+
+            this.#proc = command.spawn();
         }
 
-        if (this.#proc.stderr) {
-            this.#stderr = readableStreamFromReader(this.#proc.stderr)
-                .pipeThrough(
-                    new TextDecoderStream(),
-                );
+        if (this.options.stderr) {
+            this.#stderr = this.#proc.stderr.pipeThrough(
+                new TextDecoderStream(),
+            );
         }
-        this.#stdin = writableStreamFromWriter(this.#proc.stdin!);
+        this.#stdin = this.#proc.stdin;
         return this.#proc;
     }
 
     get stderr() {
         if (!this.#stderr) {
-            if (this.proc.stderr) {
-                this.#stderr = readableStreamFromReader(this.proc.stderr)
-                    .pipeThrough(
-                        new TextDecoderStream(),
-                    );
+            if (this.options.stderr) {
+                this.#stderr = this.proc.stderr.pipeThrough(new TextDecoderStream());
             }
         }
 
@@ -61,7 +61,7 @@ export class FFmpegStream extends ReadableStream<Uint8Array> {
 
     get stdin() {
         if (!this.#stdin) {
-            this.#stdin = writableStreamFromWriter(this.proc.stdin!);
+            this.#stdin = this.proc.stdin;
         }
 
         return this.#stdin;
@@ -72,16 +72,12 @@ export class FFmpegStream extends ReadableStream<Uint8Array> {
             pull: async (ctx) => {
                 const proc = this.proc;
 
-                for await (
-                    const chunk of readableStreamFromReader(proc.stdout!, {
-                        chunkSize: options.chunkSize,
-                    })
-                ) {
+                for await (const chunk of proc.stdout) {
                     ctx.enqueue(chunk);
                 }
 
                 ctx.close();
-                proc.close();
+                proc.kill();
             },
         });
     }
